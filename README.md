@@ -11,7 +11,7 @@ FUNCAMP/
     - Grimoire
     - R
     - RStudio
-START_grimoire.hta
+- START_grimoire.hta
 
 START_grimoire.hta is a frontend with shortcuts to grimoire tutorials.
 Grimoire subfolder contains materials necessary to the frontend (picts and R program)
