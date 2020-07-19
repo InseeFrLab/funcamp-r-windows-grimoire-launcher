@@ -13,13 +13,11 @@ FUNCAMP/
     - RStudio
 - START_grimoire.hta
 
-START_grimoire.hta is a frontend with shortcuts to grimoire tutorials. Reference file is hosted in current git repo.
-
-Grimoire subfolder contains materials necessary to the frontend (picts and R program). Reference files in this subfolder are hosted in current git repo. 
-
-R subfolder contains portable version of R. All necessary packages are included - as well as funcampR package. Reference files are prepared by hand.
-
-RStudio subfolder contains portable version of Rstudio. Reference files are prepared by hand. 
+Comments :
+- START_grimoire.hta is a frontend with shortcuts to grimoire tutorials. Reference file is hosted in current git repo.
+- Grimoire subfolder contains materials necessary to the frontend (picts and R program). Reference files in this subfolder are hosted in current git repo. 
+- R subfolder contains portable version of R. All necessary packages are included - as well as funcampR package. Reference files are prepared by hand.
+- RStudio subfolder contains portable version of Rstudio. Reference files are prepared by hand. 
 
 ## Installation
 
