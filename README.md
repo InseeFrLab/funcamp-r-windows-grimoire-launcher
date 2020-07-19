@@ -7,10 +7,10 @@ Ressources to set up on local drive all resources necessary to launch Grimoire t
 When unzipped, all ressources with be included in a folder called FUNCAMP, with the following skeleton :
 
 FUNCAMP/
-+- ressources/
-    +- Grimoire
-    +- R
-    +- RStudio
+- ressources/
+    - Grimoire
+    - R
+    - RStudio
 START_grimoire.hta
 
 START_grimoire.hta is a frontend with shortcuts to grimoire tutorials.
