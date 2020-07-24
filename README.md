@@ -21,6 +21,10 @@ Comments :
 
 ## Continuous integration
 
+Rclone is used to catch "stable" ressources from S3 funcampr bucket, to which are added "updated" ressources from various gitlab repos, then compressed in tar archive and uploaded to S3 funcampr bucket as an all-in-one archive with all necessary ressources.
+
+![](documentation/funcampr-integration-windows.png)
+
 
 ## Installation
 
