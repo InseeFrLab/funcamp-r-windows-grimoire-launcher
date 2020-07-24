@@ -7,5 +7,9 @@ ls:
         - export AWS_SECRET_ACCESS_KEY=$S3_PASSWORD
         - rclone config create monS3 s3 env_auth true provider Minio endpoint https://minio.lab.sspcloud.fr
         - "rclone ls monS3:funcampr"
-        - "mkdir funcampr-allinone"
-        - "rclone copy monS3:funcampr/picts.zip funcampr-allinone"
+        - "mkdir funcampr-gateway"
+        - "rclone copy monS3:funcampr/picts.zip funcampr-gateway"
+        - "unzip funcampr-gateway/picts.zip -d funcampr-allinone"
+        - "wget -P funcampr-allinone https://git.lab.sspcloud.fr/funcamp-r/funcamp-r-windows-grimoire-launcher/-/raw/master/Grimoire/accueil/enigme01.png"
+        - "tar cvf funcampr-gateway/funcampr.tar funcampr-allinone/"
+        - "rclone copy funcampr-gateway/funcampr.tar monS3:funcampr"
