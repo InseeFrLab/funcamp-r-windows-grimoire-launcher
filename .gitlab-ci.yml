@@ -7,3 +7,5 @@ ls:
         - export AWS_SECRET_ACCESS_KEY=$S3_PASSWORD
         - rclone config create monS3 s3 env_auth true provider Minio endpoint https://minio.lab.sspcloud.fr
         - "rclone ls monS3:funcampr"
+        - "mkdir funcampr-allinone"
+        - "rclone copy monS3:funcampr/picts.zip funcampr-allinone"
