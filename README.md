@@ -19,6 +19,9 @@ Comments :
 - R subfolder contains portable version of R. All necessary packages are included - as well as funcampR package. Reference files are prepared by hand.
 - RStudio subfolder contains portable version of Rstudio. Reference files are prepared by hand. 
 
+## Continuous integration
+
+
 ## Installation
 
 Download a all-in-one zip to the following adresse :
