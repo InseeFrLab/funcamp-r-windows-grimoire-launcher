@@ -16,5 +16,8 @@ fusion:
         - "mkdir funcampr-allinone/ressources/Grimoire"
         - "rclone copy funcampr-gateway/funcamp-r-windows-grimoire-launcher-master/Grimoire funcampr-allinone/ressources/Grimoire"
         - "rclone copy funcampr-gateway/funcamp-r-windows-grimoire-launcher-master/START_grimoire.hta funcampr-allinone"
+        - "wget -P funcampr-gateway https://git.lab.sspcloud.fr/funcamp-r/funcamp-r-windows-solarus/-/jobs/artifacts/master/download?job=game-package"
+        - "unzip -q funcampr-gateway/icaRius-windows.zip -d funcampr-gateway"
+        - "rclone copy funcampr-gateway/icaRius-windows funcampr-allinone/ressources"
         - "tar czvf funcampr-gateway/funcampr.tar.gz funcampr-allinone"
         - "rclone copy funcampr-gateway/funcampr.tar.gz monS3:funcampr"
