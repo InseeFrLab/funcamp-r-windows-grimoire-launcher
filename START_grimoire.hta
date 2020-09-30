@@ -1,7 +1,7 @@
 <html>
  <head>
 
-<HTA:APPLICATION ID="icaRius-0.9.5"
+<HTA:APPLICATION ID="icaRius-0.9.6"
   APPLICATIONNAME="icaRius - Accueil pédagogique"
   BORDER="none"
   BORDERSTYLE="normal"
@@ -86,28 +86,6 @@ Sub SetCurrDir()
    
 End Sub 
 
-'############################################################################### 
-'# DEPRECATED 
-'# Name: GetDriveLetter
-'# Purpose: Capture and set path to USB Key with name being label variable
-'###############################################################################
-Function GetDriveLetter (label)
-	GetDriveLetter = ""
-        'DriveType is one of                        '
-        '   0 = Unknown            3 = Network      '
-        '   1 = Removable          4 = CD-ROM       '
-        '   2 = Fixed              5 = RAM Disk     '
- 
-        For Each drive In CreateObject("Scripting.FileSystemObject").Drives
-            If drive.IsReady Then
-                If drive.DriveType = 1 And drive.VolumeName = label Then
-                    GetDriveLetter = drive.DriveLetter
-                    Exit Function
-                End If
-            End If
-        Next
-		
-End Function
 
 '############################################################################### 
 '# Name: countdown_launch
@@ -128,7 +106,7 @@ Sub TimerRefresh
 
       If OnlyOnce = 0 Then
             msgbox "Démarrage en cours. Merci de patienter quelques secondes..."
-            intSeconds = 30
+            intSeconds = 40
 	    OnlyOnce = 1
       Else
 	If IntSeconds > 0 Then
@@ -155,6 +133,67 @@ Sub LaunchGame
 		objShell.Run  objCurrDir & "ressources\solarus\solarus-run.exe"
 
 End Sub
+
+'############################################################################### 
+'# DEPRECATED
+'# Name: CopyRstudioSettings 
+'# Purpose: change some Rstudio settings
+'############################################################################### 
+
+Sub CopyRstudioSettings()
+
+	Set fso = CreateObject("Scripting.FileSystemObject")
+	Set objShell = CreateObject( "WScript.Shell" )
+
+	Dim ficCOPY : ficCOPY = "last-project-path"
+	Dim repSOURCE : repSOURCE = objCurrDir & "ressources\Grimoire\rstudio_settings\"
+	Dim appDataLocation
+	appDataLocation=objShell.ExpandEnvironmentStrings("%localappdata%")
+	Dim repDESTINATION : repDESTINATION = appDataLocation & "\RStudio-Desktop\projects_settings\"
+	Dim ficVERIF : ficVERIF = appDataLocation & "\RStudio-Desktop\projects_settings\" & ficCOPY
+
+	If fso.FileExists(ficVERIF) Then
+			MsgBox " Le grimoire va s'ouvrir..."
+		Else
+			fso.CopyFile repSOURCE & ficCOPY, repDESTINATION
+			MsgBox " Le grimoire va bientôt s'ouvrir..."
+	End If
+
+End Sub
+
+'############################################################################### 
+'# Name: ChangeRprofile 
+'# Purpose: change Rprofile settings on portable repo
+'############################################################################### 
+
+Sub ChangeRprofile 
+
+	Set objFSO=CreateObject("Scripting.FileSystemObject")
+
+	outFile= objCurrDir & "ressources\R\etc\Rprofile.site"
+	Set objFile = objFSO.CreateTextFile(outFile,True)
+	objFile.Write "setHook(" & Chr(34) & "rstudio.sessionInit" & Chr(34) & " , function(newSession) {" & vbCrLf &_
+	  "if (newSession " & Chr(38) & Chr(38) & " identical(getwd(), path.expand(" & Chr(34) & "~" & Chr(34) & ")))" & vbCrLf &_
+	   " {" & vbCrLf &_
+		" message(" & Chr(34) & "Ouverture du grimoire au chapitre 13" & Chr(34) & ")" & vbCrLf &_
+		" rstudioapi::openProject('" & Replace(objCurrDir,"\","/") & "ressources/funcamp-r-neverending-master/home/home/chapitre13/chapitre13.Rproj') " & vbCrLf &_
+	  " }" & vbCrLf &_
+	  "}, action = " & Chr(34) & "append" & Chr(34) & ")"
+
+End Sub
+
+'############################################################################### 
+'# Name: LaunchRstudio 
+'# Purpose: launch portable version of Rstudio
+'############################################################################### 
+Sub LaunchRstudio
+
+	ChangeRprofile()
+
+	Set objShell = CreateObject("WScript.Shell")
+		objShell.Run  objCurrDir & "ressources\RStudio\bin\rstudio.exe"
+
+End Sub 
 
 '############################################################################### 
 '# Name: enigme(theNumber)
@@ -243,17 +282,16 @@ Soyez le/la bienvenu(e) au Funcamp R. Cette page rassemble les supports pédagog
 <br>
 Parcourir ce grimoire vous permettra d’apprendre, pas à pas, le langage des Runes, nécessaire pour aider le jeune icaRius, votre alter-ego numérique, à sauver le royaume de Statis de la menace qui le guette. Au cours de cette aventure, il vous sera ainsi demandé de résoudre des énigmes, dont la solution vous permettra d’avancer un peu plus loin dans les terres de Statis. Ces énigmes sont autant d’étapes pour découvrir les possibilités (magiques!) offertes par R. La solution sera ensuite à renseigner dans l’écran du jeu icaRius, prévu à cet effet.<br>
 <br>
-<p><img src="ressources/Grimoire/accueil/grimoire.png"></p><br>
-Au fait, il est bientôt temps de démarrer votre partie d’IcaRius. Pour accéder au jeu, il y a deux méthodes. La méthode recommandée consiste à lancer le jeu sur votre poste : il suffit pour cela de cliquer, un peu plus bas, sur le bouton : <b>lancer le jeu icaRius</b>. Cette méthode vous permettra de bénéficier d'une expérience optimale, avec les musiques du jeu et des animations plus fluides. Il est également possible de jouer au jeu "en ligne" (en mode Cloud), via la plateforme Spyrales. Pour cela, il faut se rendre sur <A href="https://spyrales.sspcloud.fr/trainings/FuncampR" target="_blank">l'espace FuncampR de Spyrales</A>. Ce mode de jeu ne permet pas, à ce jour, d'avoir du son (quel dommage...). Les animations peuvent également être saccadées. Mais cela reste jouable et amusant !
+Pour accéder au jeu, il y a deux méthodes. La méthode recommandée consiste à lancer le jeu sur votre poste : il suffit pour cela de cliquer, un peu plus bas, sur le bouton : <b>lancer le jeu icaRius</b>. Cette méthode vous permettra de bénéficier d'une expérience optimale, avec les musiques du jeu et des animations plus fluides. Il est également possible de jouer au jeu "en ligne" (en mode Cloud), via la plateforme SSP Cloud. Pour cela, il faut se rendre sur <A href="https://datalab.sspcloud.fr/trainings/FuncampR" target="_blank">l'espace FuncampR du SSP Cloud</A>. Ce mode de jeu ne permet pas, à ce jour, d'avoir du son (quel dommage...). Les animations peuvent également être saccadées. Mais cela reste jouable et amusant !
 <br>
 <br>
-Encore un instant avant de jouer. Au fur et à mesure de votre aventure, vous aurez à résoudre des énigmes, posées par les personnages que vous croiserez au cours de votre quête. A chaque énigme correspond un tutoriel d'apprentissage en R. Pour lancer le tutoriel correspondant, il vous faudra cliquer, <b>en bas de cette page</b>, sur le bouton correspondant : chaque tutoriel est numéroté pour bien s'y retrouver.<br> 
+Encore un instant avant de jouer. Au fur et à mesure de votre aventure, vous aurez à résoudre des énigmes, posées par les personnages que vous croiserez au cours de votre quête. A chaque énigme correspond un tutoriel d'apprentissage en R. <b>Pour lancer le tutoriel correspondant, il vous faudra cliquer, en bas de cette page, sur le bouton correspondant</b> : chaque tutoriel est numéroté pour bien s'y retrouver.<br> 
 <br>
 Au bout de quelques minutes de jeu, vous rencontrerez ainsi le Mage RegoR, qui vous proposera de résoudre une première énigme. Voici la question posée : “quel est l’âge d’icaRius ?”. Le premier tutoriel R de cette aventure vous apportera la réponse. Une fois trouvée, il faudra la reporter dans le jeu icaRius, dans l'écran bleu, pour débloquer la suite de l'histoire. 
 <br>
 <p><img src="ressources/Grimoire/accueil/icaRius_premiers_pas.png"></p><br>
 <br>
-<b><i>Vous êtes prêt(e)s ? Lancer donc le jeu icaRius puis, le moment venu, activez depuis cette page chaque tutoriel correspondant à votre énigme via les panneaux ci-dessous. </i></b>
+<b><i>Vous êtes prêt(e)s ? Lancez le jeu icaRius puis, le moment venu, activez chaque tutoriel correspondant à votre énigme via les panneaux ci-dessous. </i></b>
 <br>
 
 <p>
@@ -443,11 +481,25 @@ De l’oxygène documentaire. Rencontre d'un drôle d’oiseau, au bord du Datal
 <br>
 <img src="ressources/Grimoire/accueil/enigme13.png"><br>
 <br>
- l'histoire sans fin. La gueRnouille Asa apprend à icaRius comment écrire la fin de l'histoire...<br>
+La gueRnouille Asa apprend à icaRius comment écrire la fin de l'histoire...<br>
 <br>
 <input type="button" name="launch_enigme_13" Value="Lancez le tutoriel" onClick="enigme 13"><br>
 <br>
 <span id="span_clock_13"> * <BR> *  * </span>
+<br>
+</span> 
+
+<span class="b"> 
+<b>Enigme 13 - Le parchemin</b> <br>
+<br>
+<img src="ressources/Grimoire/accueil/enigme13.png"><br>
+<br>
+ ... sur un parchemin bien particulier, qui clôture (et ouvre) vos aventures statistiques<br>
+<br>
+<button onclick="LaunchRstudio">Ecrire sur le parchemin</button>
+<br>
+<br>
+<span> * <BR> *  * </span>
 <br>
 </span> 
 
@@ -461,10 +513,7 @@ De l’oxygène documentaire. Rencontre d'un drôle d’oiseau, au bord du Datal
 </p>
 
 <br>
-<br>
-<INPUT ID="LocnBtn" CLASS="BUTTON" TYPE="BUTTON" VALUE="Test du chemin" OnClick="Report()">
-<br>
-<br>
+
 </div>
 </div>
 
