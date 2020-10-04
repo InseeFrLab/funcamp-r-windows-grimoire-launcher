@@ -176,11 +176,66 @@ Sub ChangeRprofile
 	  "if (newSession " & Chr(38) & Chr(38) & " identical(getwd(), path.expand(" & Chr(34) & "~" & Chr(34) & ")))" & vbCrLf &_
 	   " {" & vbCrLf &_
 		" message(" & Chr(34) & "Ouverture du grimoire au chapitre 13" & Chr(34) & ")" & vbCrLf &_
-		" rstudioapi::openProject('" & Replace(objCurrDir,"\","/") & "ressources/funcamp-r-neverending-master/home/home/chapitre13/chapitre13.Rproj') " & vbCrLf &_
+		" rstudioapi::openProject('" & Replace(objCurrDir,"\","/") & "ressources/Grimoire/neverending/home/home/chapitre13/chapitre13.Rproj') " & vbCrLf &_
 	  " }" & vbCrLf &_
 	  "}, action = " & Chr(34) & "append" & Chr(34) & ")"
 
 End Sub
+
+
+'############################################################################### 
+'# Name: PausedSection
+'# Purpose: Set of instructions to be executed after a delay
+'###############################################################################
+	
+ Sub PausedSection
+	
+	' Create a WSH Shell object:
+	Set wshShell = CreateObject( "WScript.Shell" )
+
+	' Delete the subkey and key and the values they contain:
+	wshShell.RegDelete "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version"
+	wshShell.RegDelete "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath"
+	
+    window.clearTimeout(idTimer)
+		
+End Sub
+
+
+'############################################################################### 
+'# Name: EditUserRegistry 
+'# Purpose: change local user registry to boot on portable R rather than desktop one
+'############################################################################### 
+
+Sub EditUserRegistry
+
+	' Create a WSH Shell object:
+	Set wshShell = CreateObject( "WScript.Shell" )
+	'
+	' Create a new key:
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\", ""
+
+	' Create new values:
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version", "3.5.1", "REG_SZ"
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath", objCurrDir & "ressources\R", "REG_SZ"
+
+	' Read the values we just created:
+	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version = " _
+			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version" )
+	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath = """ _
+			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath" ) & """"
+
+	' Launch Rstudio subroutine
+	LaunchRstudio
+			   
+	' Delete Temporary Registry Values
+	idTimer = window.setTimeout("PausedSection", 10000, "VBScript")
+
+	' Release the object
+	Set wshShell = Nothing
+
+End Sub
+
 
 '############################################################################### 
 '# Name: LaunchRstudio 
@@ -496,7 +551,7 @@ La gueRnouille Asa apprend à icaRius comment écrire la fin de l'histoire...<br
 <br>
  ... sur un parchemin bien particulier, qui clôture (et ouvre) vos aventures statistiques<br>
 <br>
-<button onclick="LaunchRstudio">Ecrire sur le parchemin</button>
+<button onclick="EditUserRegistry">Ecrire sur le parchemin</button>
 <br>
 <br>
 <span> * <BR> *  * </span>
@@ -508,6 +563,7 @@ La gueRnouille Asa apprend à icaRius comment écrire la fin de l'histoire...<br
 <p>
 <br>
 <INPUT ID="ExitBtn" CLASS="BUTTON" TYPE="BUTTON" VALUE="Fermer cette page" OnClick="EndApp()"> 
+<br>
 <br>
 <br>
 </p>
