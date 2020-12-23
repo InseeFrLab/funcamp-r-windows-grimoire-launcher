@@ -22,4 +22,3 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_USERNAME }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PASSWORD }}
         AWS_S3_ENDPOINT: https://minio.lab.sspcloud.fr
-        SOURCE_DIR: 'source'      # optional: defaults to entire repository
