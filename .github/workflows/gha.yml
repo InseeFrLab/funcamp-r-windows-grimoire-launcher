@@ -1,1 +1,19 @@
+name: packaging all-in-one funcampR dock
 
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: rclone/rclone
+    steps:
+      - name: Hello Word
+        run: |
+          echo This job does specify a container.
+          echo It runs in the container instead of the VM.
