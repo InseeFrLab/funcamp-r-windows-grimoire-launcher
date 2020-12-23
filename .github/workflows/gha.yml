@@ -13,7 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     container: rclone/rclone
     steps:
+      - uses: actions/checkout@v2
       - name: Hello Word
         run: |
           echo This job does specify a container.
           echo It runs in the container instead of the VM.
+      - name: Access S3
+        run: | 
+          export AWS_ACCESS_KEY_ID=$S3_USERNAME
+          export AWS_SECRET_ACCESS_KEY=$S3_PASSWORD
+          rclone config create monS3 s3 env_auth true provider Minio endpoint https://minio.lab.sspcloud.fr
+          "rclone ls monS3:funcampr"
+          "mkdir funcampr-gateway"
+          "mkdir funcampr-allinone"
+        # Copying required statistical softwares and dependencies (R and packages, Rstudio) in portable mode
+      - name: Download initial dock
+        run: |    
+          "rclone copy monS3:funcampr/ressources.zip funcampr-gateway"
+          "unzip -q funcampr-gateway/ressources.zip -d funcampr-allinone"
