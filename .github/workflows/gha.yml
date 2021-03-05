@@ -9,28 +9,66 @@ on:
   pull_request:
 
 jobs:
-  sync-job:
+  helloword:
     runs-on: ubuntu-latest
-    # container: rclone/rclone
+    container: rclone/rclone
     steps:
-    - uses: actions/checkout@master
-    - uses: jakejarvis/s3-sync-action@master
-      with:
-        args: --acl public-read --follow-symlinks
-      env:
-        AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3_USERNAME }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PASSWORD }}
-        AWS_S3_ENDPOINT: https://minio.lab.sspcloud.fr
-  rclone-job:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: rclone
-      uses: wei/rclone@v1
-      env:
-          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
-      with:
-        args: |
-          'config create monS3 s3 env_auth true provider Minio endpoint https://minio.lab.sspcloud.fr'
-          'ls monS3:funcampr'
+      - name: Credential
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_USERNAME }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PASSWORD }}
+        run: |
+          rclone config create monS3 s3 env_auth true provider Minio endpoint https://minio.lab.sspcloud.fr
+          rclone ls monS3:funcampr
+          mkdir funcampr-gateway
+          mkdir funcampr-allinone
+  # Copying required statistical softwares and dependencies (R and packages, Rstudio) in portable mode
+      - name: Download Initial Dock
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_USERNAME }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PASSWORD }}
+        run: |
+          rclone copy monS3:funcampr/ressources.zip funcampr-gateway
+          unzip -q funcampr-gateway/ressources.zip -d funcampr-allinone
+  # Updating Grimoire Package with latest version of tutorial (datasets and .RMD) and root copy of datasets for users
+      - name: Update Grimoire Package
+        run: |
+          wget -P funcampr-gateway https://github.com/InseeFrLab/funcamp-r-grimoire/archive/master.zip
+          unzip -q funcampr-gateway/master.zip -d funcampr-gateway
+          rm funcampr-gateway/master.zip
+          rm -r funcampr-allinone/ressources/R/library/funcampR/data
+          rm -r funcampr-allinone/ressources/R/library/funcampR/learnr
+          rclone copy funcampr-gateway/funcamp-r-grimoire-master/inst funcampr-allinone/ressources/R/library/funcampR
+          mkdir funcampr-allinone/data
+          rclone copy funcampr-gateway/funcamp-r-grimoire-master/inst/data funcampr-allinone/data
+  # Copying front-end launcher (with picts in Grimoire subfolder and hta user interface)
+      - name: Download Front-end Launcher
+        run: |   
+          wget -P funcampr-gateway https://github.com/InseeFrLab/funcamp-r-windows-grimoire-launcher/archive/master.zip
+          unzip -q funcampr-gateway/master.zip -d funcampr-gateway
+          rm funcampr-gateway/master.zip
+          mkdir funcampr-allinone/ressources/Grimoire
+          rclone copy funcampr-gateway/funcamp-r-windows-grimoire-launcher-master/Grimoire funcampr-allinone/ressources/Grimoire
+          rclone copy funcampr-gateway/funcamp-r-windows-grimoire-launcher-master/START_grimoire.hta funcampr-allinone
+ # Copying icaRius game from repo
+      - name: Download icaRius game
+        run: |
+          wget -P funcampr-gateway https://github.com/InseeFrLab/funcamp-r-icarius/releases/download/V1/data.tgz
+          tar -xzf funcampr-gateway/data.tgz -C funcampr-gateway
+          mkdir funcampr-allinone/ressources/solarus
+          mkdir funcampr-allinone/ressources/solarus/data
+          rclone copy funcampr-gateway/data funcampr-allinone/ressources/solarus/data
+# Copying Solarus Game Engine
+      - name: Download Solarus Game Engine
+        run: |
+          wget -P funcampr-gateway https://github.com/InseeFrLab/funcamp-r-windows-solarus/archive/master.zip
+          unzip -q funcampr-gateway/master.zip -d funcampr-gateway
+          rclone copy funcampr-gateway/funcamp-r-windows-solarus-master/solarus funcampr-allinone/ressources/solarus
+  # Zipping the whole folder and pushing to S3 repo
+      - name: Push On Minio
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_USERNAME }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_PASSWORD }}
+        run: |   
+          tar czf funcampr-gateway/funcampr-allinone.tar.gz funcampr-allinone
+          rclone copy funcampr-gateway/funcampr-allinone.tar.gz monS3:funcampr
