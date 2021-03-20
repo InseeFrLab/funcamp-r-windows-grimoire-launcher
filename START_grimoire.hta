@@ -1,7 +1,7 @@
 <html>
  <head>
 
-<HTA:APPLICATION ID="icaRius-1.0.1"
+<HTA:APPLICATION ID="icaRius-1.0.2"
   APPLICATIONNAME="icaRius - Accueil pédagogique"
   BORDER="none"
   BORDERSTYLE="normal"
@@ -219,11 +219,8 @@ Sub EditUserRegistry
 	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version", "3.5.1", "REG_SZ"
 	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath", objCurrDir & "ressources\R", "REG_SZ"
 
-	' Read the values we just created:
-	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version = " _
-			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version" )
-	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath = """ _
-			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath" ) & """"
+	' Launching message
+	MsgBox "Rstudio va se lancer. Appuyez sur OK et patientez quelques instants..."
 
 	' Launch Rstudio subroutine
 	LaunchRstudio
