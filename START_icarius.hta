@@ -1,0 +1,376 @@
+﻿<html>
+ <head>
+
+<HTA:APPLICATION ID="icaRius-0.9.9"
+  APPLICATIONNAME="icaRius - Accueil pédagogique"
+  BORDER="none"
+  BORDERSTYLE="normal"
+  CAPTION="yes"
+  CONTEXTMENU="yes"
+  ICON="ressources/Grimoire/accueil/icon.bmp"
+  INNERBORDER="yes"
+  MAXIMIZEBUTTON="yes"
+  MINIMIZEBUTTON="yes"
+  NAVIGABLE="yes"
+  SCROLL="yes"
+  SCROLLFLAT="no"
+  SELECTION="yes"
+  SHOWINTASKBAR="yes"
+  SINGLEINSTANCE="yes"
+  SYSMENU="yes"
+  VERSION="1.0"
+  WINDOWSTATE="maximize" />
+
+
+<script type="text/vbscript">
+
+' Declare global variable outside the Subs
+Dim intSeconds
+Dim OnlyOnce
+Dim iTimerID
+Dim spanID
+Dim drive
+Dim objCurrDir 
+  
+'############################################################################### 
+'# Name: Window_OnLoad 
+'# Purpose: Functions to execute at load time. 
+'############################################################################### 
+Sub Window_OnLoad 
+   SetCurrDir() 
+End Sub 
+ 
+'############################################################################### 
+'# Name: Report 
+'# Purpose: Report own location. 
+'############################################################################### 
+Sub Report() 
+   MsgBox "Script's parent folder: " & VbNewLine & VbNewLine & objCurrDir & "ressources\R\bin\Rscript.exe"
+End Sub 
+ 
+'############################################################################### 
+'# Name: EndApp 
+'# Purpose: Exit HTA application. 
+'############################################################################### 
+Sub EndApp() 
+   self.Close() 
+End Sub 
+ 
+'############################################################################### 
+'# Name: SetCurrDir 
+'# Purpose: Capture and set def to folder where this HTA exists. 
+'############################################################################### 
+Sub SetCurrDir() 
+   Set objFSO = CreateObject("Scripting.FileSystemObject") 
+   Set WshShell = CreateObject("WScript.Shell") 
+   '### document.location.href always returns the HTML rendering of own fully-qualified 
+   '### location: "file:///" followed by fully-qualified path to curr file, but elements   
+   '### are separated by FORWARD slashes and spaces are rendered as "%20". 
+   '### Capture it, strip off leading data, replace slashes and escape sequences. 
+   strHtmlLocnVal = document.location.href 
+   strThisHTA = Replace(Right(strHtmlLocnVal, Len(strHtmlLocnVal) - 8), "/", "\") 
+   strThisHTA = UnEscape(strThisHTA) 
+   '### Bind FSO to the file and capture parent directory. 
+   Set objThisFile = objFSO.GetFile(strThisHTA) 
+   objParentDir = objThisFile.ParentFolder 
+   Set objFolder = objFSO.GetFolder(objParentDir) 
+   '### To preclude problems with folder names that contain spaces, e.g. 
+   '### "Documents and Settings" or "Program Files", return the 8.3 name. 
+   objCurrDir = objFolder.Path 
+   WshShell.CurrentDirectory = objCurrDir 
+   '# Add a final backslash if current folder is not a Drive root
+   If Len(objCurrDir) > 3 Then
+		objCurrDir = objCurrDir & "\"
+   End If
+  
+   
+End Sub 
+
+
+'############################################################################### 
+'# Name: countdown_launch
+'# Purpose: Create a countdown starting with theNumber value
+'###############################################################################
+Sub countdown_launch(theNumber)
+      intSeconds = 0
+      OnlyOnce = 0
+      iTimerID = window.setInterval("TimerRefresh", 1000)
+      spanID = "span_clock_" & theNumber
+End Sub
+
+'############################################################################### 
+'# Name: TimerRefresh
+'# Purpose: Refresh the countdown
+'###############################################################################
+Sub TimerRefresh
+
+      If OnlyOnce = 0 Then
+            msgbox "Démarrage en cours. Merci de patienter quelques secondes..."
+            intSeconds = 40
+	    OnlyOnce = 1
+      Else
+	If IntSeconds > 0 Then
+        	intSeconds = intSeconds - 1
+		document.getElementById(spanID).innerHTML = "Le tutoriel se lance et sera disponible d'ici environ : " & Right("00" & intSeconds, 2) & " secondes"
+	Else
+		IntSeconds = 0
+		window.clearInterval(iTimerID)
+		document.getElementById(spanID).innerHTML = "tutoriel exécuté"
+	End If
+
+      End If
+      
+End Sub
+
+
+'############################################################################### 
+'# Name: LaunchGame
+'# Purpose: launch Solarus Game
+'###############################################################################
+Sub LaunchGame
+
+	Set objShell = CreateObject("WScript.Shell")
+		objShell.Run  objCurrDir & "ressources\solarus\solarus-run.exe"
+
+End Sub
+
+'############################################################################### 
+'# DEPRECATED
+'# Name: CopyRstudioSettings 
+'# Purpose: change some Rstudio settings
+'############################################################################### 
+
+Sub CopyRstudioSettings()
+
+	Set fso = CreateObject("Scripting.FileSystemObject")
+	Set objShell = CreateObject( "WScript.Shell" )
+
+	Dim ficCOPY : ficCOPY = "last-project-path"
+	Dim repSOURCE : repSOURCE = objCurrDir & "ressources\Grimoire\rstudio_settings\"
+	Dim appDataLocation
+	appDataLocation=objShell.ExpandEnvironmentStrings("%localappdata%")
+	Dim repDESTINATION : repDESTINATION = appDataLocation & "\RStudio-Desktop\projects_settings\"
+	Dim ficVERIF : ficVERIF = appDataLocation & "\RStudio-Desktop\projects_settings\" & ficCOPY
+
+	If fso.FileExists(ficVERIF) Then
+			MsgBox " Le grimoire va s'ouvrir..."
+		Else
+			fso.CopyFile repSOURCE & ficCOPY, repDESTINATION
+			MsgBox " Le grimoire va bientôt s'ouvrir..."
+	End If
+
+End Sub
+
+'############################################################################### 
+'# Name: ChangeRprofile 
+'# Purpose: change Rprofile settings on portable repo
+'############################################################################### 
+
+Sub ChangeRprofile 
+
+	Set objFSO=CreateObject("Scripting.FileSystemObject")
+
+	outFile= objCurrDir & "ressources\R\etc\Rprofile.site"
+	Set objFile = objFSO.CreateTextFile(outFile,True)
+	objFile.Write "setHook(" & Chr(34) & "rstudio.sessionInit" & Chr(34) & " , function(newSession) {" & vbCrLf &_
+	  "if (newSession " & Chr(38) & Chr(38) & " identical(getwd(), path.expand(" & Chr(34) & "~" & Chr(34) & ")))" & vbCrLf &_
+	   " {" & vbCrLf &_
+		" message(" & Chr(34) & "Ouverture du grimoire au chapitre 13" & Chr(34) & ")" & vbCrLf &_
+		" rstudioapi::openProject('" & Replace(objCurrDir,"\","/") & "ressources/Grimoire/neverending/home/home/chapitre13/chapitre13.Rproj') " & vbCrLf &_
+	  " }" & vbCrLf &_
+	  "}, action = " & Chr(34) & "append" & Chr(34) & ")"
+
+End Sub
+
+
+'############################################################################### 
+'# Name: PausedSection
+'# Purpose: Set of instructions to be executed after a delay
+'###############################################################################
+	
+ Sub PausedSection
+	
+	' Create a WSH Shell object:
+	Set wshShell = CreateObject( "WScript.Shell" )
+
+	' Delete the subkey and key and the values they contain:
+	wshShell.RegDelete "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version"
+	wshShell.RegDelete "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath"
+	
+    window.clearTimeout(idTimer)
+		
+End Sub
+
+
+'############################################################################### 
+'# Name: EditUserRegistry 
+'# Purpose: change local user registry to boot on portable R rather than desktop one
+'############################################################################### 
+
+Sub EditUserRegistry
+
+	' Create a WSH Shell object:
+	Set wshShell = CreateObject( "WScript.Shell" )
+	'
+	' Create a new key:
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\", ""
+
+	' Create new values:
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version", "3.5.1", "REG_SZ"
+	wshShell.RegWrite "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath", objCurrDir & "ressources\R", "REG_SZ"
+
+	' Read the values we just created:
+	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version = " _
+			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\Current Version" )
+	MsgBox "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath = """ _
+			   & wshShell.RegRead( "HKEY_CURRENT_USER\SOFTWARE\R-core\R\InstallPath" ) & """"
+
+	' Launch Rstudio subroutine
+	LaunchRstudio
+			   
+	' Delete Temporary Registry Values
+	idTimer = window.setTimeout("PausedSection", 10000, "VBScript")
+
+	' Release the object
+	Set wshShell = Nothing
+
+End Sub
+
+
+'############################################################################### 
+'# Name: LaunchRstudio 
+'# Purpose: launch portable version of Rstudio
+'############################################################################### 
+Sub LaunchRstudio
+
+	ChangeRprofile()
+
+	Set objShell = CreateObject("WScript.Shell")
+		objShell.Run  objCurrDir & "ressources\RStudio\bin\rstudio.exe"
+
+End Sub 
+
+'############################################################################### 
+'# Name: enigme(theNumber)
+'# Purpose: launch Xth R tutorial with X = theNumber
+'###############################################################################
+sub enigme(theNumber)
+
+	Call countdown_launch(theNumber)
+
+	Dim oShell : Set oShell = CreateObject("WScript.Shell")
+	' Kill previous Rscript.exe '
+	oShell.Run "taskkill /im Rscript.exe", , True
+	
+	Rexe           = objCurrDir & "ressources\R\bin\Rscript.exe"
+	Ropts          = "--no-save --no-environ --no-init-file --no-restore --no-Rconsole"
+	RScriptFile    = objCurrDir & "ressources\Grimoire\launch_chapitre.R"
+	Outfile        = objCurrDir & "ressources\Grimoire\launch_chapitre" & theNumber & ".log" 
+	strCommand     = Rexe & " " & Ropts & " " & RScriptFile & " " & theNumber & " 1> " & Outfile & " 2>&1"
+	intWindowStyle = 0     ' Hide the window and activate another window.'
+	bWaitOnReturn  = False ' continue running script after launching R   
+
+	' Run new Rscript.exe with related R program'
+	Set wshShell = CreateObject("WScript.Shell")
+    	WshShell.Run strCommand, intWindowStyle, bWaitOnRetur
+
+end sub
+  
+</script>
+
+ <title>Funcamp R</title>
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html">
+ <style>
+  body
+  {
+   background-color:white;
+  }
+   
+  #titre
+  {
+   width:100vw;
+   text-align:center;
+   color:#067790;
+   font-family:calibri,arial;
+  }
+ 
+p  {
+   text-align:center;
+   font-family:calibri,arial;
+  }
+
+#outer-div {
+  width: 100%; 
+  text-align: center;
+}
+
+#inner-div {
+  display: inline-block; 
+  text-align:left;
+  background-color: white;
+  border: 1px solid black;
+  padding: 25px;
+  margin: 25px auto;
+  width: 1100px;
+  font-family:calibri,arial;
+}
+
+span.b {
+  display: inline-block;
+  width: 300px;
+  height: 300px;
+  padding: 5px;
+  margin: 20px;
+  border: 1px solid black;    
+  background-color: white; 
+}
+
+</style>
+</head>
+<body>
+<div id ="outer-div" width="100%">
+<div id ="inner-div">
+<p><img src="ressources/Grimoire/accueil/Funcamp-Frise.png"> <h1 id='titre'>Funcamp R - Accueil</h1></p>
+<br>
+Soyez le/la bienvenu(e) au Funcamp R. Cette page ouvre le grimoire IGoR, qui vous accompagnera dans l’épopée statistico-ludique dont vous êtes le héros / l’héroïne. Vous y trouverez, distillée au fur et à mesure des chapitres enluminés, toute la sagesse accumulée par ces mages qui, dans l’ombre, ont imaginé les épreuves que vous aurez à franchir.<br>
+<br>
+Parcourir ce grimoire vous permettra d’apprendre, pas à pas, le langage des Runes, nécessaire pour aider le jeune icaRius, votre alter-ego numérique, à sauver le royaume de Statis de la menace qui le guette. Au cours de cette aventure, il vous sera ainsi demandé de résoudre des énigmes, dont la solution vous permettra d’avancer un peu plus loin dans les terres de Statis. Ces énigmes sont autant d’étapes pour découvrir les possibilités (magiques!) offertes par R. La solution sera ensuite à renseigner dans l’écran du jeu icaRius, prévu à cet effet.<br>
+<br>
+Pour accéder au jeu, il suffit pour cela de cliquer, un peu plus bas, sur le bouton : <b>lancer le jeu icaRius</b>. Encore un instant avant de jouer. Au fur et à mesure de votre aventure, vous aurez à résoudre des énigmes, posées par les personnages que vous croiserez au cours de votre quête. A chaque énigme correspond un tutoriel d'apprentissage en R. Pour lancer le tutoriel correspondant, il vous faudra vous rendre sur l'espace FuncampR du SSP Cloud (https://datalab.sspcloud.fr/trainings/FuncampR)</A>. 
+<br>
+<br>
+Au bout de quelques minutes de jeu, vous rencontrerez ainsi le Mage RegoR, qui vous proposera de résoudre une première énigme. Voici la question posée : “quel est l’âge d’icaRius ?”. Le premier tutoriel R de cette aventure vous apportera la réponse. Une fois trouvée, il faudra la reporter dans le jeu icaRius, dans l'écran bleu, pour débloquer la suite de l'histoire. 
+<br>
+<p><img src="ressources/Grimoire/accueil/icaRius_premiers_pas.png"></p><br>
+<br>
+<b><i>Vous êtes prêt(e)s ? Lancez le jeu icaRius puis, le moment venu, activez chaque tutoriel correspondant à votre énigme sur datalab.sspcloud.fr </i></b>
+<br>
+
+<p>
+<span class="b"> 
+<br>
+<img src="ressources/Grimoire/accueil/icarius_startscreen.png"><br>
+<br>
+<br>
+<button onclick="LaunchGame">LANCER LE JEU ICARIUS</button>
+<br>
+<br>
+</span>
+</p>
+
+<p>
+<br>
+<INPUT ID="ExitBtn" CLASS="BUTTON" TYPE="BUTTON" VALUE="FERMER CETTE PAGE" OnClick="EndApp()"> 
+<br>
+<br>
+<br>
+</p>
+
+<br>
+
+</div>
+</div>
+
+ </body>
+</html>
